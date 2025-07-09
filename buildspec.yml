@@ -1,5 +1,0 @@
-phases:
-  pre_build:
-    commands:
-      - pip install -r requirements.txt
-      - pytest
