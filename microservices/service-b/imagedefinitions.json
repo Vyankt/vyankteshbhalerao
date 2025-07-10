@@ -1,0 +1,26 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_TAG: latest
+    REPOSITORY_A: 924922671984.dkr.ecr.ap-south-2.amazonaws.com/app/service-a
+    REPOSITORY_B: 924922671984.dkr.ecr.ap-south-2.amazonaws.com/app/service-b
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin $REPOSITORY_A)
+  build:
+    commands:
+      - docker build -t $REPOSITORY_A:$IMAGE_TAG ./service-a
+      - docker build -t $REPOSITORY_B:$IMAGE_TAG ./service-b
+  post_build:
+    commands:
+      - docker push $REPOSITORY_A:$IMAGE_TAG
+      - docker push $REPOSITORY_B:$IMAGE_TAG
+      - echo '[{"name":"service-a-container","imageUri":"'$REPOSITORY_A:$IMAGE_TAG'"},{"name":"service-b-container","imageUri":"'$REPOSITORY_B:$IMAGE_TAG'"}]' > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
